@@ -1,5 +1,5 @@
 use rocket::http::uri::{Segments};
-use rocket::request::FromSegments;
+use rocket::request::{self, Request, FromSegments, FromRequest};
 use std::fmt;
 use std::error::Error;
 
@@ -56,8 +56,19 @@ impl<'a> FromSegments<'a> for User {
 	}
 }
 
+impl<'a, 'r> FromRequest<'a, 'r> for User {
+	type Error = UserError;
 
+	fn from_request(request: &'a Request<'r>) -> request::Outcome<Self, Self::Error> {
+		println!("fromrequest for user {:?}", request);
 
+		// request::Outcome::Success(User{
+		// 	name: String::from("hmm"),
+		// 	age: None
+		// })
+		request::Outcome::Failure((rocket::http::Status::new(400, "Some Reason"), UserError::NoName))
+	}
+}
 
 #[get("/world")]
 pub fn someroute() -> &'static str {
